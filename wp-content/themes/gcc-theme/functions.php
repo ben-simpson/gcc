@@ -128,7 +128,8 @@ function register_html5_menu()
     register_nav_menus(array( // Using array to specify more menus if needed
         'header-menu' => __('Header Menu', 'html5blank'), // Main Navigation
         'sidebar-menu' => __('Sidebar Menu', 'html5blank'), // Sidebar Navigation
-        'extra-menu' => __('Extra Menu', 'html5blank') // Extra Navigation if needed (duplicate as many as you need!)
+		'sections-menu' => __('Sections Menu', 'html5blank'), // Extra Navigation if needed (duplicate as many as you need!)
+        'category-menu' => __('Category Menu', 'html5blank') // Extra Navigation if needed (duplicate as many as you need!)
     ));
 }
 
@@ -219,13 +220,14 @@ function html5wp_pagination()
 }
 
 // Custom Excerpts
-function html5wp_index($length) // Create 20 Word Callback for Index page Excerpts, call using html5wp_excerpt('html5wp_index');
+// Create 20 Word Callback for Excerpts, call using html5wp_excerpt('excerpt_20');
+function excerpt_20($length)
 {
     return 20;
 }
 
-// Create 40 Word Callback for Custom Post Excerpts, call using html5wp_excerpt('html5wp_custom_post');
-function html5wp_custom_post($length)
+// Create 40 Word Callback for Excerpts, call using html5wp_excerpt('excerpt_40');
+function excerpt_40($length)
 {
     return 40;
 }
@@ -243,7 +245,6 @@ function html5wp_excerpt($length_callback = '', $more_callback = '')
     $output = get_the_excerpt();
     $output = apply_filters('wptexturize', $output);
     $output = apply_filters('convert_chars', $output);
-    $output = '<p>' . $output . '</p>';
     echo $output;
 }
 
@@ -251,7 +252,7 @@ function html5wp_excerpt($length_callback = '', $more_callback = '')
 function html5_blank_view_article($more)
 {
     global $post;
-    return '... <a class="view-article" href="' . get_permalink($post->ID) . '">' . __('View Article', 'html5blank') . '</a>';
+    return '...';
 }
 
 // Remove Admin bar
@@ -382,7 +383,8 @@ add_filter('post_thumbnail_html', 'remove_thumbnail_dimensions', 10); // Remove 
 add_filter('image_send_to_editor', 'remove_thumbnail_dimensions', 10); // Remove width and height dynamic attributes to post images
 
 // Remove Filters
-remove_filter('the_excerpt', 'wpautop'); // Remove <p> tags from Excerpt altogether
+remove_filter( 'the_content', 'wpautop' ); //disable auto generated 'p' tags in the content
+remove_filter( 'the_excerpt', 'wpautop' ); //disable auto generated 'p' tags in the excerpt
 
 // Shortcodes
 add_shortcode('html5_shortcode_demo', 'html5_shortcode_demo'); // You can place [html5_shortcode_demo] in Pages, Posts now.
@@ -395,35 +397,37 @@ add_shortcode('html5_shortcode_demo_2', 'html5_shortcode_demo_2'); // Place [htm
 	Custom Post Types
 \*------------------------------------*/
 
-// Create 1 Custom Post type for a Demo, called HTML5-Blank
+// Custom Post Type: Sermons
 function create_post_type_html5()
 {
-    register_taxonomy_for_object_type('category', 'html5-blank'); // Register Taxonomies for Category
-    register_taxonomy_for_object_type('post_tag', 'html5-blank');
-    register_post_type('html5-blank', // Register Custom Post Type
+    register_taxonomy_for_object_type('category', 'Sermons'); // Register Taxonomies for Category
+    register_taxonomy_for_object_type('post_tag', 'Sermons');
+    register_post_type('sermon', // Register Custom Post Type
         array(
         'labels' => array(
-            'name' => __('HTML5 Blank Custom Post', 'html5blank'), // Rename these to suit
-            'singular_name' => __('HTML5 Blank Custom Post', 'html5blank'),
-            'add_new' => __('Add New', 'html5blank'),
-            'add_new_item' => __('Add New HTML5 Blank Custom Post', 'html5blank'),
-            'edit' => __('Edit', 'html5blank'),
-            'edit_item' => __('Edit HTML5 Blank Custom Post', 'html5blank'),
-            'new_item' => __('New HTML5 Blank Custom Post', 'html5blank'),
-            'view' => __('View HTML5 Blank Custom Post', 'html5blank'),
-            'view_item' => __('View HTML5 Blank Custom Post', 'html5blank'),
-            'search_items' => __('Search HTML5 Blank Custom Post', 'html5blank'),
-            'not_found' => __('No HTML5 Blank Custom Posts found', 'html5blank'),
-            'not_found_in_trash' => __('No HTML5 Blank Custom Posts found in Trash', 'html5blank')
+            'name' => __('Sermons', 'sermon'), // Rename these to suit
+            'singular_name' => __('Sermon', 'sermon'),
+            'add_new' => __('Add New', 'sermon'),
+            'add_new_item' => __('Add New Sermon', 'sermon'),
+            'edit' => __('Edit', 'sermon'),
+            'edit_item' => __('Edit Sermon', 'sermon'),
+            'new_item' => __('New Sermon', 'sermon'),
+            'view' => __('View Sermon', 'sermon'),
+            'view_item' => __('View Sermon', 'sermon'),
+            'search_items' => __('Results in Sermons', 'sermon'),
+            'not_found' => __('No Sermons could be found.', 'sermon'),
+            'not_found_in_trash' => __('No Sermons could be found in Trash.', 'sermon')
         ),
         'public' => true,
-        'hierarchical' => true, // Allows your posts to behave like Hierarchy Pages
+        'hierarchical' => false, // Allows your posts to behave like Hierarchy Pages
         'has_archive' => true,
         'supports' => array(
             'title',
+			'author',
             'editor',
             'excerpt',
-            'thumbnail'
+            'thumbnail',
+			'custom fields'
         ), // Go to Dashboard Custom HTML5 Blank post for supports
         'can_export' => true, // Allows export in Tools > Export
         'taxonomies' => array(
@@ -431,8 +435,45 @@ function create_post_type_html5()
             'category'
         ) // Add Category and Post Tags support
     ));
-}
+	
+	register_taxonomy_for_object_type('category', 'Events'); // Register Taxonomies for Category
+    register_taxonomy_for_object_type('post_tag', 'Events');
+    register_post_type('event', // Register Custom Post Type
+        array(
+        'labels' => array(
+            'name' => __('Events', 'event'), // Rename these to suit
+            'singular_name' => __('Event', 'event'),
+            'add_new' => __('Add New', 'event'),
+            'add_new_item' => __('Add New Event', 'event'),
+            'edit' => __('Edit', 'event'),
+            'edit_item' => __('Edit Event', 'event'),
+            'new_item' => __('New Event', 'event'),
+            'view' => __('View Event', 'event'),
+            'view_item' => __('View Event', 'event'),
+            'search_items' => __('Results in Events', 'event'),
+            'not_found' => __('No Events could be found.', 'event'),
+            'not_found_in_trash' => __('No Events could be found in Trash.', 'event')
+        ),
+        'public' => true,
+        'hierarchical' => false, // Allows your posts to behave like Hierarchy Pages
+        'has_archive' => true,
+        'supports' => array(
+            'title',
+			'author',
+            'editor',
+            'excerpt',
+            'thumbnail',
+			'custom fields'
+        ), // Go to Dashboard Custom HTML5 Blank post for supports
+        'can_export' => true, // Allows export in Tools > Export
+        'taxonomies' => array(
+            'post_tag',
+            'category'
+        ) // Add Category and Post Tags support
+    ));
 
+}
+	
 /*------------------------------------*\
 	ShortCode Functions
 \*------------------------------------*/
